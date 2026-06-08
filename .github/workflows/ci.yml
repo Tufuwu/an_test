@@ -1,32 +1,35 @@
-name: CI
+name: Node.js CI
 
 on:
   push:
     branches:
       - main
-      - master
-  pull_request: {}
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [10.x, 12.x]
+        node_version: ["10", "12"]
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-node@v3
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Cache Yarn packages
+      uses: actions/cache@v2
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: yarn
-    - run: yarn install --frozen-lockfile
-    - run: yarn lint
-    - run: yarn test
-    - run: yarn test:integration
-    - run: yarn test:notelemetry
-
-    - uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path: ~/.yarn
+        key: ${{ matrix.node_version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+        restore-keys: |
+          ${{ matrix.node_version }}-yarn-
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+    - name: Lint
+      run: yarn lint
+    - name: Test
+      run: yarn test
+    - name: Integration Test
+      run: yarn test:integration
+    - name: Notelemetry Test
+      run: yarn test:notelemetry
+    - name: Upload coverage to Coveralls
+      run: yarn coveralls
