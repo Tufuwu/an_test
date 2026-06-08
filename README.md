@@ -1,269 +1,141 @@
-# ember-angle-brackets-codemod
+# Delaunator [![](https://img.shields.io/badge/simply-awesome-brightgreen.svg)](https://github.com/mourner/projects) [![](https://badgen.net/bundlephobia/minzip/delaunator)](https://unpkg.com/delaunator)
 
-[![Ember Observer Score](https://emberobserver.com/badges/ember-angle-brackets-codemod.svg)](https://emberobserver.com/addons/ember-angle-brackets-codemod)
-[![Build Status](https://travis-ci.org/ember-codemods/ember-angle-brackets-codemod.svg?branch=master)](https://travis-ci.org/ember-codemods/ember-angle-brackets-codemod)
-[![Coverage Status](https://coveralls.io/repos/github/ember-codemods/ember-angle-brackets-codemod/badge.svg?branch=master)](https://coveralls.io/github/ember-codemods/ember-angle-brackets-codemod?branch=master)
-[![npm version](http://img.shields.io/npm/v/ember-angle-brackets-codemod.svg?style=flat)](https://npmjs.org/package/ember-angle-brackets-codemod 'View this project on npm')
-[![dependencies Status](https://david-dm.org/ember-codemods/ember-angle-brackets-codemod/status.svg)](https://david-dm.org/ember-codemods/ember-angle-brackets-codemod)
-[![devDependencies Status](https://david-dm.org/ember-codemods/ember-angle-brackets-codemod/dev-status.svg)](https://david-dm.org/ember-codemods/ember-angle-brackets-codemod?type=dev)
+An incredibly fast and robust JavaScript library for
+[Delaunay triangulation](https://en.wikipedia.org/wiki/Delaunay_triangulation) of 2D points.
 
-A [jscodeshift](https://github.com/facebook/jscodeshift) Codemod to convert curly braces syntax to angle brackets syntax for templates
-in an Ember.js app
+- [Interactive Demo](https://mapbox.github.io/delaunator/demo.html)
+- [Guide to data structures](https://mapbox.github.io/delaunator/)
 
-Refer to this [RFC](https://github.com/emberjs/rfcs/blob/master/text/0311-angle-bracket-invocation.md) for more details on Angle brackets invocation syntax.
+<img src="delaunator.png" alt="Delaunay triangulation example" width="600" />
 
-## Requirements
+### Projects based on Delaunator
 
-This codemod currently only supports Ember's classic filesystem layout, meaning it won't work if your app uses pods. For more info, [see this issue](https://github.com/ember-codemods/ember-angle-brackets-codemod/issues/217).
+- [d3-delaunay](https://github.com/d3/d3-delaunay) for Voronoi diagrams, search, traversal and rendering (a part of [D3](https://d3js.org)).
+- [d3-geo-voronoi](https://github.com/Fil/d3-geo-voronoi) for Delaunay triangulations and Voronoi diagrams on a sphere (e.g. for geographic locations).
 
-## Usage
-
-**WARNING**: `jscodeshift`, and thus this codemod, **edits your files in place**.
-It does not make a copy. Make sure your code is checked into a source control
-repository like Git and that you have no outstanding changes to commit before
-running this tool.
-
-1. Start your ember development server
-2. Run Codemod, pointing it at the address of the development server
-
-```sh
-$ cd my-ember-app-or-addon
-$ npx ember-angle-brackets-codemod --telemetry=http://localhost:4200 ./path/of/files/ or ./some**/*glob.hbs
-```
-
-Telemetry helpers runs the app, grabs basic info about all of the modules at runtime. This allows the codemod to know the names of every helper, component, route, controller, etc. in the app without guessing / relying on static analysis. They basically help you to create "runtime assisted codemods".
-
-See "Gathering runtime data" section of [ember-native-class-codemod](https://github.com/ember-codemods/ember-native-class-codemod#gathering-runtime-data) for some additonal information.
-
-### Running the codemod without Telemetry
-
-```sh
-$ cd my-ember-app-or-addon
-$ npx ember-angle-brackets-codemod ./path/of/files/ or ./some**/*glob.hbs
-```
-
-**NOTE** If you are not using telemetry, you will probably need to [manually configure the codemod to at least skip any helpers](#skipping-helpers) that are invoked in the template files you are running it on.
-
-## From
-
-```hbs
-{{site-header user=this.user class=(if this.user.isAdmin "admin")}}
-
-{{#super-select selected=this.user.country as |s|}}
-  {{#each this.availableCountries as |country|}}
-    {{#s.option value=country}}{{country.name}}{{/s.option}}
-  {{/each}}
-{{/super-select}}
-
-{{ui/button text="Click me"}}
-```
-
-## To
-
-```hbs
-<SiteHeader @user={{this.user}} class={{if this.user.isAdmin "admin"}} />
-<SuperSelect @selected={{this.user.country}} as |s|>
-  {{#each this.availableCountries as |country|}}
-    <s.option @value={{country}}>
-      {{country.name}}
-    </s.option>
-  {{/each}}
-</SuperSelect>
-
-<Ui::Button @text="Click me" />
-```
-
-## Advanced Usage
-
-### Skipping helpers
-
-To help the codemod disambiguate components and helpers, you can define a list of helpers from your application in a configuration file as follows:
-
-**config/anglebrackets-codemod-config.json**
+## Example
 
 ```js
-{
-  "helpers": [
-    "date-formatter",
-    "info-pill"
-  ]
+const coords = [168,180, 168,178, 168,179, 168,181, 168,183, ...];
+
+const delaunay = new Delaunator(coords);
+console.log(delaunay.triangles);
+// [623, 636, 619,  636, 444, 619, ...]
+```
+
+## Install
+
+Install with NPM (`npm install delaunator`) or Yarn (`yarn add delaunator`), then import as an ES module:
+
+```js
+import Delaunator from 'delaunator';
+```
+
+To use as a module in a browser:
+
+```html
+<script type="module">
+    import Delaunator from 'https://cdn.skypack.dev/delaunator@5.0.0';
+</script>
+```
+
+Or use a browser UMD build that exposes a `Delaunator` global variable:
+
+```html
+<script src="https://unpkg.com/delaunator@5.0.0/delaunator.min.js"></script>
+```
+
+## API Reference
+
+#### new Delaunator(coords)
+
+Constructs a delaunay triangulation object given an array of point coordinates of the form:
+`[x0, y0, x1, y1, ...]` (use a typed array for best performance).
+
+#### Delaunator.from(points[, getX, getY])
+
+Constructs a delaunay triangulation object given an array of points (`[x, y]` by default).
+`getX` and `getY` are optional functions of the form `(point) => value` for custom point formats.
+Duplicate points are skipped.
+
+#### delaunay.triangles
+
+A `Uint32Array` array of triangle vertex indices (each group of three numbers forms a triangle).
+All triangles are directed counterclockwise.
+
+To get the coordinates of all triangles, use:
+
+```js
+for (let i = 0; i < triangles.length; i += 3) {
+    coordinates.push([
+        points[triangles[i]],
+        points[triangles[i + 1]],
+        points[triangles[i + 2]]
+    ]);
 }
 ```
 
-The codemod will then ignore the above list of helpers and prevent them from being transformed into the new angle-brackets syntax.
+#### delaunay.halfedges
 
-You can also disable the conversion of the built-in components `{{link-to}}`, `{{input}}` and `{{textarea}}` as follows:
+A `Int32Array` array of triangle half-edge indices that allows you to traverse the triangulation.
+`i`-th half-edge in the array corresponds to vertex `triangles[i]` the half-edge is coming from.
+`halfedges[i]` is the index of a twin half-edge in an adjacent triangle
+(or `-1` for outer half-edges on the convex hull).
 
-**config/anglebrackets-codemod-config.json**
+The flat array-based data structures might be counterintuitive,
+but they're one of the key reasons this library is fast.
 
-```js
-{
-  "helpers": [],
-  "skipBuiltInComponents": true
-}
-```
+#### delaunay.hull
 
-You can execute the codemod with custom configuration by specifying a `--config` command line option as follows:
+A `Uint32Array` array of indices that reference points on the convex hull of the input data, counter-clockwise.
 
-```sh
-$ cd my-ember-app-or-addon
-$ npx ember-angle-brackets-codemod angle-brackets app/templates --config ./config/anglebrackets-codemod-config.json
-```
+#### delaunay.coords
 
-To get a list of helpers in your app you can do this in the Developer Console in your browser inside of your app:
+An array of input coordinates in the form `[x0, y0, x1, y1, ....]`,
+of the type provided in the constructor (or `Float64Array` if you used `Delaunator.from`).
 
-```js
-var componentLikeHelpers = Object.keys(require.entries)
-  .filter(name => name.includes('/helpers/') || name.includes('/helper'))
-  .filter(name => !name.includes('/-'))
-  .map(name => {
-    let path = name.split('/helpers/');
-    return path.pop();
-  })
-  .filter(name => !name.includes('/'))
-  .uniq();
+#### delaunay.update()
 
-copy(JSON.stringify(componentLikeHelpers));
-```
+Updates the triangulation if you modified `delaunay.coords` values in place, avoiding expensive memory allocations.
+Useful for iterative relaxation algorithms such as [Lloyd's](https://en.wikipedia.org/wiki/Lloyd%27s_algorithm).
 
-### Skipping some files
+## Performance
 
-If there are files that don't convert well, you can skip them by specifying an optional `skipFilesThatMatchRegex` configuration setting. For example, with the configuration below, all files that contain `"foo"` or `"bar"` will be skipped:
+Benchmark results against other Delaunay JS libraries
+(`npm run bench` on Macbook Pro Retina 15" 2017, Node v10.10.0):
 
-**config/anglebrackets-codemod-config.json**
+&nbsp; | uniform 100k | gauss 100k | grid 100k | degen 100k | uniform 1&nbsp;million | gauss 1&nbsp;million | grid 1&nbsp;million | degen 1&nbsp;million
+:-- | --: | --: | --: | --: | --: | --: | --: | --:
+**delaunator** | 82ms | 61ms | 66ms | 25ms | 1.07s | 950ms | 830ms | 278ms
+[faster&#8209;delaunay](https://github.com/Bathlamos/delaunay-triangulation) | 473ms | 411ms | 272ms | 68ms | 4.27s | 4.62s | 4.3s | 810ms
+[incremental&#8209;delaunay](https://github.com/mikolalysenko/incremental-delaunay) | 547ms | 505ms | 172ms | 528ms | 5.9s | 6.08s | 2.11s | 6.09s
+[d3&#8209;voronoi](https://github.com/d3/d3-voronoi) | 972ms | 909ms | 358ms | 720ms | 15.04s | 13.86s | 5.55s | 11.13s
+[delaunay&#8209;fast](https://github.com/ironwallaby/delaunay) | 3.8s | 4s | 12.57s | timeout | 132s | 138s | 399s | timeout
+[delaunay](https://github.com/darkskyapp/delaunay) | 4.85s | 5.73s | 15.05s | timeout | 156s | 178s | 326s | timeout
+[delaunay&#8209;triangulate](https://github.com/mikolalysenko/delaunay-triangulate) | 2.24s | 2.04s | OOM | 1.51s | OOM | OOM | OOM | OOM
+[cdt2d](https://github.com/mikolalysenko/cdt2d) | 45s | 51s | 118s | 17s | timeout | timeout | timeout | timeout
 
-```js
-{
-  "helpers": [],
-  "skipBuiltInComponents": true,
-  "skipFilesThatMatchRegex": "foo|bar"
-}
-```
+## Papers
 
-### Skipping some attributes
+The algorithm is based on ideas from the following papers:
 
-If there are cases where some attributes should not be prefixed with `@`, you can skip them by specifying an optional `skipAttributesThatMatchRegex` configuration setting.
-For example, with the configuration below, all attributes that matches either `/data-/gim` or `/aria-/gim` will not be prefixed with `@`:
+- [A simple sweep-line Delaunay triangulation algorithm](http://www.academicpub.org/jao/paperInfo.aspx?paperid=15630), 2013, Liu Yonghe, Feng Jinming and Shao Yuehong
+- [S-hull: a fast radial sweep-hull routine for Delaunay triangulation](http://www.s-hull.org/paper/s_hull.pdf), 2010, David Sinclair
+- [A faster circle-sweep Delaunay triangulation algorithm](http://cglab.ca/~biniaz/papers/Sweep%20Circle.pdf), 2011, Ahmad Biniaz and Gholamhossein Dastghaibyfard
 
-### Processing valueless data test attributes
+## Robustness
 
-Curly invocations that have `data-test-` attributes with no value are not processed by default. The configuration below will cause them to be processed:
+Delaunator should produce valid output even on highly degenerate input. It does so by depending on [robust-predicates](https://github.com/mourner/robust-predicates), a modern port of Jonathan Shewchuk's robust geometric predicates, an industry standard in computational geometry.
 
-**config/anglebrackets-codemod-config.json**
+## Ports to other languages
 
-```js
-{
-  "includeValuelessDataTestAttributes": true
-}
-```
-
-**config/anglebrackets-codemod-config.json**
-
-```js
-{
-  "helpers": [],
-  "skipBuiltInComponents": true,
-  "skipAttributesThatMatchRegex": ["/data-/gim", "/aria-/gim"]
-}
-```
-
-Input:
-
-```js
-  {{some-component data-test-foo=true aria-label="bar" foo=true}}
-```
-
-Output:
-
-```js
-  <SomeComponent data-test-foo={{true}} aria-label="bar" @foo={{true}} />
-```
-
-### Converting specific components only
-
-If you would like to only convert certain component invocations to use the angle brackets syntax, use the `components` configuration setting and specify component names. For example, with the configuration below, only the `{{baz}}` and `{{bat}}` components will be converted, leaving everything else intact.
-
-**config/anglebrackets-codemod-config.json**
-
-```js
-{
-  "components": ["baz", "bat"]
-}
-```
-
-## Debugging Workflow
-
-Oftentimes, you want to debug the codemod or the transform to identify issues with the code or to understand
-how the transforms are working, or to troubleshoot why some tests are failing.
-
-Hence we recommend a debugging work-flow like below to quickly find out what is causing the issue.
-
-### 1. Place `debugger` statements
-
-Add `debugger` statements, in appropriate places in the code. For example:
-
-```js
-...
-const params = a.value.params.map(p => {
-  debugger;
-  if(p.type === "SubExpression") {
-    return transformNestedSubExpression(p)
-...
-```
-
-### 2. Inspect the process with node debug
-
-Here we are going to start the tests selectively in node debug mode. Since the
-codemod is using [jest](https://jestjs.io/) in turn
-to run the tests, jest is having an option `-t <name-of-spec>` to run a particular
-set of tests instead of running the whole test suite.
-
-We are making use of both these features to start our tests in this particular fashion.
-For more details on node debug, visit the [official](https://nodejs.org/en/docs/guides/debugging-getting-started/)
-Node.js debugging guide, and for jest documentation on tests, please refer [here](https://jestjs.io/docs/en/cli).
-
-```sh
-node --inspect-brk ./node_modules/.bin/jest --runInBand --testNamePattern <test-name> 
-```
-
-For example, if you want to debug the `null-subexp` test or only that particular test case is failing because of an issue.
-
-```sh
-node --inspect-brk ./node_modules/.bin/jest --runInBand --testNamePattern 'null-subexp' 
-```
-
-Or you can make use of the npm scripts defined in package.json. All you need to pass the test name as the extra parameter with the script.
-
-```sh
-npm run debug:test 'null-subexp'
-```
-
-Using yarn
-```sh
-yarn debug:test 'null-subexp'
-```
-
-Once you run the above command, your tests will start running in debug mode and your breakpoints will be
-triggered appropriately when that particular block of code gets executed. You can run the debugger inside
-Chrome browser dev-tools. More details on [here](https://developers.google.com/web/tools/chrome-devtools/javascript/)
-
-## AST Explorer playground
-
-1. Go to the [AST Explorer](https://astexplorer.net/#/gist/b128d5545d7ccc52400b922f3b5010b4/642c6a8d3cc021257110bcf6b1714d1065891aec)
-2. Paste your curly brace syntax code in the top left corner window (Source)
-3. You will get the converted angle bracket syntax in the bottom right corner window (Transform Output)
-
-## RFC
-
-- [Angle Bracket Invocation](https://github.com/emberjs/rfcs/blob/master/text/0311-angle-bracket-invocation.md)
-- [Angle Bracket Invocations For Built-in Components](https://github.com/emberjs/rfcs/blob/32a25b31d67d67bc7581dd0bead559063b06f076/text/0459-angle-bracket-built-in-components.md)
-
-## Known issues
-
-- No formatting preserved
-
-## References:
-
-- https://github.com/glimmerjs/glimmer-vm/issues/685
-- https://github.com/q2ebanking/ember-template-rewrite
-- https://github.com/ember-template-lint/ember-template-recast
+- [delaunator-rs](https://github.com/mourner/delaunator-rs) (Rust)
+- [fogleman/delaunay](https://github.com/fogleman/delaunay) (Go)
+- [delaunator-cpp](https://github.com/abellgithub/delaunator-cpp) (C++)
+- [delaunator-sharp](https://github.com/nol1fe/delaunator-sharp) (C#)
+- [delaunator-ruby](https://github.com/hendrixfan/delaunator-ruby) (Ruby)
+- [Delaunator-Python](https://github.com/HakanSeven12/Delaunator-Python) (Python)
+- [ricardomatias/delaunator](https://github.com/ricardomatias/delaunator) (Kotlin)
+- [delaunator-java](https://github.com/waveware4ai/delaunator-java) (Java)
+- [delaunay-Stata](https://github.com/asjadnaqvi/stata-delaunay-voronoi) (Stata/Mata)
+- [Delaunator.jl](https://github.com/JuliaGeometry/Delaunator.jl) (Julia)

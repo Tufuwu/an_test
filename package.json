@@ -1,76 +1,47 @@
 {
-  "name": "ember-angle-brackets-codemod",
-  "version": "5.1.0",
-  "description": "Codemod to convert to Angle brackets syntax",
-  "keywords": [
-    "codemod-cli",
-    "codemods",
-    "ember",
-    "ember-codemod"
-  ],
-  "homepage": "https://github.com/ember-codemods/ember-angle-brackets-codemod#readme",
-  "bugs": {
-    "url": "https://github.com/ember-codemods/ember-angle-brackets-codemod/issues"
+  "name": "delaunator",
+  "version": "5.0.1",
+  "description": "An incredibly fast JavaScript library for Delaunay triangulation of 2D points",
+  "main": "index.js",
+  "module": "index.js",
+  "type": "module",
+  "jsdelivr": "delaunator.min.js",
+  "unpkg": "delaunator.min.js",
+  "sideEffects": false,
+  "dependencies": {
+    "robust-predicates": "^3.0.2"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "eslint": "^9.5.0",
+    "eslint-config-mourner": "^4.0.0",
+    "rollup": "^4.18.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ember-codemods/ember-angle-brackets-codemod.git"
+    "url": "https://github.com/mapbox/delaunator.git"
   },
-  "license": "MIT",
-  "author": "",
-  "bin": "./bin/cli.js",
   "scripts": {
-    "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls",
-    "debug:integration": "node --inspect-brk ./test/run-test.js",
-    "debug:test": "node --inspect-brk ./node_modules/.bin/jest -i -t ",
-    "lint": "eslint . --cache",
-    "release": "release-it",
-    "test": "codemod-cli test --coverage",
-    "test:integration": "node ./test/run-test.js",
-    "test:notelemetry": " node ./test/run-test-without-telemetry.js"
+    "lint": "eslint index.js test/test.js bench.js rollup.config.js docs/diagrams.js",
+    "pretest": "npm run lint",
+    "test": "node --test-reporter spec test/test.js",
+    "cov": "node --experimental-test-coverage test/test.js",
+    "bench": "node bench.js",
+    "build": "rollup -c",
+    "start": "rollup -cw",
+    "prepublishOnly": "npm test && npm run build"
   },
-  "jest": {
-    "collectCoverageFrom": [
-      "transforms/angle-brackets/transform.js"
-    ]
-  },
-  "dependencies": {
-    "codemod-cli": "^3.1.2",
-    "debug": "^4.3.1",
-    "ember-codemods-telemetry-helpers": "^2.1.0",
-    "ember-template-recast": "^5.0.1",
-    "winston": "^3.3.3"
-  },
-  "devDependencies": {
-    "coveralls": "^3.1.0",
-    "eslint": "^7.25.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^3.4.0",
-    "execa": "^5.0.0",
-    "jest": "^26.6.3",
-    "prettier": "^2.2.1",
-    "release-it": "^14.6.1",
-    "release-it-lerna-changelog": "^3.1.0"
-  },
-  "engines": {
-    "node": "10.* || >=12.*"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org"
-  },
-  "release-it": {
-    "plugins": {
-      "release-it-lerna-changelog": {
-        "infile": "CHANGELOG.md",
-        "launchEditor": true
-      }
-    },
-    "git": {
-      "tagName": "v${version}"
-    },
-    "github": {
-      "release": true,
-      "tokenRef": "GITHUB_AUTH"
-    }
-  }
+  "files": [
+    "index.js",
+    "delaunator.js",
+    "delaunator.min.js"
+  ],
+  "keywords": [
+    "delaunay triangulation",
+    "computational geometry",
+    "algorithms"
+  ],
+  "author": "Vladimir Agafonkin",
+  "license": "ISC"
 }
