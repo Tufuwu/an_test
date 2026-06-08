@@ -1,64 +1,76 @@
 {
-  "name": "vue-jwt-mongo",
-  "version": "1.7.3",
-  "description": "A simple authentication system for Vue.js",
-  "files": [
-    "distribution/"
+  "name": "ember-angle-brackets-codemod",
+  "version": "5.1.0",
+  "description": "Codemod to convert to Angle brackets syntax",
+  "keywords": [
+    "codemod-cli",
+    "codemods",
+    "ember",
+    "ember-codemod"
   ],
-  "main": "distribution/server.js",
-  "browser": "distribution/client.js",
-  "scripts": {
-    "test": "mocha --exit tests/*",
-    "coverage": "nyc --reporter=lcovonly npm run test",
-    "build": "babel source --out-dir distribution"
+  "homepage": "https://github.com/ember-codemods/ember-angle-brackets-codemod#readme",
+  "bugs": {
+    "url": "https://github.com/ember-codemods/ember-angle-brackets-codemod/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dubov94/vue-jwt-mongo.git"
+    "url": "git+https://github.com/ember-codemods/ember-angle-brackets-codemod.git"
   },
-  "keywords": [
-    "vue",
-    "jwt",
-    "jsonwebtoken",
-    "express",
-    "mongo",
-    "mongodb",
-    "auth",
-    "authentication"
-  ],
-  "author": "Pavel Dubov",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/dubov94/vue-jwt-mongo/issues"
+  "author": "",
+  "bin": "./bin/cli.js",
+  "scripts": {
+    "coveralls": "cat ./coverage/lcov.info | node node_modules/.bin/coveralls",
+    "debug:integration": "node --inspect-brk ./test/run-test.js",
+    "debug:test": "node --inspect-brk ./node_modules/.bin/jest -i -t ",
+    "lint": "eslint . --cache",
+    "release": "release-it",
+    "test": "codemod-cli test --coverage",
+    "test:integration": "node ./test/run-test.js",
+    "test:notelemetry": " node ./test/run-test-without-telemetry.js"
   },
-  "homepage": "https://github.com/dubov94/vue-jwt-mongo#readme",
-  "// dependencies.passport": "https://github.com/jaredhanson/passport/issues/939",
+  "jest": {
+    "collectCoverageFrom": [
+      "transforms/angle-brackets/transform.js"
+    ]
+  },
   "dependencies": {
-    "body-parser": "1.20.1",
-    "express-jwt": "8.2.1",
-    "jsonwebtoken": "9.0.0",
-    "jwt-decode": "2.2.0",
-    "merge": "2.1.1",
-    "mongoose": "6.11.3",
-    "passport": "0.4.1",
-    "passport-local": "1.0.0",
-    "passport-local-mongoose": "6.0.1"
+    "codemod-cli": "^3.1.2",
+    "debug": "^4.3.1",
+    "ember-codemods-telemetry-helpers": "^2.1.0",
+    "ember-template-recast": "^5.0.1",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
-    "@babel/cli": "7.17.6",
-    "@babel/core": "7.9.0",
-    "@babel/preset-env": "7.9.0",
-    "chai": "4.2.0",
-    "chai-http": "4.3.0",
-    "codecov": "3.7.1",
-    "dom-storage": "2.1.0",
-    "express": "4.18.2",
-    "jsdom": "19.0.0",
-    "mocha": "9.2.2",
-    "mongodb-memory-server": "8.9.4",
-    "nyc": "15.0.0",
-    "sinon": "9.0.1",
-    "vue": "2.5.16",
-    "vue-resource": "1.5.3"
+    "coveralls": "^3.1.0",
+    "eslint": "^7.25.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "execa": "^5.0.0",
+    "jest": "^26.6.3",
+    "prettier": "^2.2.1",
+    "release-it": "^14.6.1",
+    "release-it-lerna-changelog": "^3.1.0"
+  },
+  "engines": {
+    "node": "10.* || >=12.*"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "release-it": {
+    "plugins": {
+      "release-it-lerna-changelog": {
+        "infile": "CHANGELOG.md",
+        "launchEditor": true
+      }
+    },
+    "git": {
+      "tagName": "v${version}"
+    },
+    "github": {
+      "release": true,
+      "tokenRef": "GITHUB_AUTH"
+    }
   }
 }
