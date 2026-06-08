@@ -1,38 +1,23 @@
-name: Node.js CI
+# Github actions workflow name
+name: CI
 
+# Triggers the workflow on push or pull request events
 on:
   push:
-    branches:
-      - main
+    branches: [master]
+  pull_request:
+    branches: [master]
 
 jobs:
-  build:
+  jest_test:
+    name: miniprogram-simulate test with jest
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [12]
-        react-dist: [16, 17]
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
-
-      - name: Install dependencies
-        run: |
-          yarn
-          yarn add react@${{ matrix.react-dist }} react-dom@${{ matrix.react-dist }}
-          yarn --cwd www
-
-      - name: Run tests
-        run: yarn test
-
-      - name: Build and release
-        if: success()
-        run: |
-          npm run build
-          npm run semantic-release
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 12
+    - run: npm install
+    - run: npm run test
+    - run: npm run codecov
