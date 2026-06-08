@@ -1,4 +1,4 @@
-name: Python application
+name: CI
 
 on: [push, pull_request]
 
@@ -7,31 +7,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out repository
+    - name: Checkout code
       uses: actions/checkout@v2
-      
-    - name: Set up Python 3.9
+
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
-        
-    - name: Install Graphviz
+
+    - name: Install graphviz
       run: |
         sudo apt-get install graphviz-dev
-        
-    - name: Install PyGraphviz
-      run: |
         pip install pygraphviz
-        
+
     - name: Install dependencies
+      run: pip install pytest codecov pytest-cov
+
+    - name: Test with pytest and coverage
       run: |
-        pip install pytest codecov pytest-cov
-        
-    - name: Test with pytest and codecov
-      env:
-        QT_QPA_PLATFORM: "offscreen"
-      run: |
+        export QT_QPA_PLATFORM="offscreen"
         pytest --rootdir ${{ github.workspace }} --cov=./
-        
+
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v1
