@@ -1,190 +1,165 @@
-# d3-funnel
+# protocol-buffers
 
-[![npm](https://img.shields.io/npm/v/d3-funnel.svg?style=flat-square)](https://www.npmjs.com/package/d3-funnel)
-[![Build Status](https://img.shields.io/github/workflow/status/jakezatecky/d3-funnel/Build?style=flat-square)](https://github.com/jakezatecky/d3-funnel/actions/workflows/main.yml)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://raw.githubusercontent.com/jakezatecky/d3-funnel/master/LICENSE.txt)
-
-**d3-funnel** is an extensible, open-source JavaScript library for rendering
-funnel charts using the [D3.js][d3] library.
-
-d3-funnel is focused on providing practical and visually appealing funnels
-through a variety of customization options. Check out the [examples page][examples]
-to get a showcasing of the several possible options.
-
-# Installation
-
-To install this library, simply include both [D3.js][d3] and D3Funnel:
-
-``` html
-<script src="/path/to/d3.js"></script>
-<script src="/path/to/dist/d3-funnel.js"></script>
-```
-
-Alternatively, if you are using Webpack or Browserify, you can install the npm
-package and `import` the module. This will include a compatible version of
-D3.js for you:
+[Protocol Buffers](https://developers.google.com/protocol-buffers/) for Node.js
 
 ```
-npm install d3-funnel --save
+npm install protocol-buffers
 ```
 
-``` javascript
-import D3Funnel from 'd3-funnel';
+[![build status](https://github.com/mafintosh/protocol-buffers/actions/workflows/test.yml/badge.svg)](https://github.com/mafintosh/protocol-buffers/actions/workflows/test.yml)
+![dat](http://img.shields.io/badge/Development%20sponsored%20by-dat-green.svg?style=flat)
+
+## Usage
+
+Assuming the following `test.proto` file exists
+
+```proto
+enum FOO {
+  BAR = 1;
+}
+
+message Test {
+  required float num  = 1;
+  required string payload = 2;
+}
+
+message AnotherOne {
+  repeated FOO list = 1;
+}
 ```
 
-# Usage
+Use the above proto file to encode/decode messages by doing
 
-To use this library, you must create a container element and instantiate a new
-funnel chart. By default, the chart will assume the width and height of the
-parent container:
+``` js
+var protobuf = require('protocol-buffers')
 
-``` html
-<div id="funnel"></div>
+// pass a proto file as a buffer/string or pass a parsed protobuf-schema object
+var messages = protobuf(fs.readFileSync('test.proto'))
 
-<script>
-    const data = [
-        { label: 'Inquiries', value: 5000 },
-        { label: 'Applicants', value: 2500 },
-        { label: 'Admits', value: 500 },
-        { label: 'Deposits', value: 200 },
-    ];
-    const options = {
-        block: {
-            dynamicHeight: true,
-            minHeight: 15,
-        },
-    };
+var buf = messages.Test.encode({
+  num: 42,
+  payload: 'hello world'
+})
 
-    const chart = new D3Funnel('#funnel');
-    chart.draw(data, options);
-</script>
+console.log(buf) // should print a buffer
 ```
 
-## Options
+To decode a message use `Test.decode`
 
-| Option                 | Description                                                               | Type     | Default                 |
-| ---------------------- | ------------------------------------------------------------------------- | -------- | ----------------------- |
-| `chart.width`          | The width of the chart in pixels or a percentage.                         | mixed    | Container's width       |
-| `chart.height`         | The height of the chart in pixels or a percentage.                        | mixed    | Container's height      |
-| `chart.bottomWidth`    | The percent of total width the bottom should be.                          | number   | `1 / 3`                 |
-| `chart.bottomPinch`    | How many blocks to pinch on the bottom to create a funnel "neck".         | number   | `0`                     |
-| `chart.inverted`       | Whether the funnel direction is inverted (like a pyramid).                | bool     | `false`                 |
-| `chart.animate`        | The load animation speed in milliseconds.                                 | number   | `0` (disabled)          |
-| `chart.curve.enabled`  | Whether the funnel is curved.                                             | bool     | `false`                 |
-| `chart.curve.height`   | The curvature amount.                                                     | number   | `20`                    |
-| `chart.totalCount`     | Override the total count used in ratio calculations.                      | number   | `null`                  |
-| `block.dynamicHeight`  | Whether the block heights are proportional to their weight.               | bool     | `false`                 |
-| `block.dynamicSlope`   | Whether the block widths are proportional to their value decrease.        | bool     | `false`                 |
-| `block.barOverlay`     | Whether the blocks have bar chart overlays proportional to its weight.    | bool     | `false`                 |
-| `block.fill.scale`     | The background color scale as an array or function.                       | mixed    | `d3.schemeCategory10`   |
-| `block.fill.type`      | Either `'solid'` or `'gradient'`.                                         | string   | `'solid'`               |
-| `block.minHeight`      | The minimum pixel height of a block.                                      | number   | `0`                     |
-| `block.highlight`      | Whether the blocks are highlighted on hover.                              | bool     | `false`                 |
-| `label.enabled`        | Whether the block labels should be displayed.                             | bool     | `true`                  |
-| `label.fontFamily`     | Any valid font family for the labels.                                     | string   | `null`                  |
-| `label.fontSize`       | Any valid font size for the labels.                                       | string   | `'14px'`                |
-| `label.fill`           | Any valid hex color for the label color.                                  | string   | `'#fff'`                |
-| `label.format`         | Either `function(label, value)` or a format string. See below.            | mixed    | `'{l}: {f}'`            |
-| `tooltip.enabled`      | Whether tooltips should be enabled on hover.                              | bool     | `false`                 |
-| `tooltip.format`       | Either `function(label, value)` or a format string. See below.            | mixed    | `'{l}: {f}'`            |
-| `events.click.block`   | Callback `function(data)` for when a block is clicked.                    | function | `null`                  |
-
-### Label/Tooltip Format
-
-The option `label.format` can either be a function or a string. The following
-keys will be substituted by the string formatter:
-
-| Key     | Description                  |
-| ------- | ---------------------------- |
-| `'{l}'` | The block's supplied label.  |
-| `'{v}'` | The block's raw value.       |
-| `'{f}'` | The block's formatted value. |
-
-### Event Data
-
-Block-based events are passed a `data` object containing the following elements:
-
-| Key             | Type   | Description                           |
-| --------------- | ------ | ------------------------------------- |
-| index           | number | The index of the block.               |
-| node            | object | The DOM node of the block.            |
-| value           | number | The numerical value.                  |
-| fill            | string | The background color.                 |
-| label.raw       | string | The unformatted label.                |
-| label.formatted | string | The result of `options.label.format`. |
-| label.color     | string | The label color.                      |
-
-Example:
-
-``` javascript
-{
-    index: 0,
-    node: { ... },
-    value: 150,
-    fill: '#c33',
-    label: {
-        raw: 'Visitors',
-        formatted: 'Visitors: 150',
-        color: '#fff',
-    },
-},
+``` js
+var obj = messages.Test.decode(buf)
+console.log(obj) // should print an object similar to above
 ```
 
-### Overriding Defaults
+Enums are accessed in the same way as messages
 
-You may wish to override the default chart options. For example, you may wish
-for every funnel to have proportional heights. To do this, simply modify the
-`D3Funnel.defaults` property:
-
-``` javascript
-D3Funnel.defaults.block.dynamicHeight = true;
+``` js
+var buf = messages.AnotherOne.encode({
+  list: [
+    messages.FOO.BAR
+  ]
+})
 ```
 
-Should you wish to override multiple properties at a time, you may consider
-using [lodash's][lodash-merge] `_.merge` or [jQuery's][jquery-extend] `$.extend`:
+Nested emums are accessed as properties on the corresponding message
 
-``` javascript
-D3Funnel.defaults = _.merge(D3Funnel.defaults, {
-    block: {
-        dynamicHeight: true,
-        fill: {
-            type: 'gradient',
-        },
-    },
-    label: {
-        format: '{l}: ${f}',
-    },
-});
+``` js
+var buf = message.SomeMessage.encode({
+  list: [
+    messages.SomeMessage.NESTED_ENUM.VALUE
+  ]
+})
 ```
 
-## Advanced Data
+See the [Google Protocol Buffers docs](https://developers.google.com/protocol-buffers/) for more information about the
+available types etc.
 
-In the examples above, both `label` and `value` were just to describe a block
-within the funnel. A complete listing of the available options is included
-below:
+## Compile to a file
 
-| Option          | Type   | Description                                                     | Example       |
-| --------------- | ------ | --------------------------------------------------------------- | ------------- |
-| label           | mixed  | **Required.** The label to associate with the block.            | `'Students'`  |
-| value           | number | **Required.** The value (or count) to associate with the block. | `500`         |
-| backgroundColor | string | A row-level override for `block.fill.scale`. Hex only.          | `'#008080'`   |
-| formattedValue  | mixed  | A row-level override for `label.format`.                        | `'USD: $150'` |
-| hideLabel       | bool   | Whether to hide the formatted label for this block.             | `true`        |
-| labelColor      | string | A row-level override for `label.fill`. Hex only.                | `'#333'`      |
+Since v4 you can now compile your schemas to a JavaScript file you can require from Node.
+This means you do not have runtime parse the schemas, which is useful if using in the browser or on embedded devices.
+It also makes the dependency footprint a lot smaller.
 
-## API
+``` sh
+# first install the cli tool
+npm install -g protocol-buffers
 
-Additional methods beyond `draw()` are accessible after instantiating the chart:
+# compile the schema
+protocol-buffers test.proto -o messages.js
 
-| Method      | Description                                     |
-| ----------- | ----------------------------------------------- |
-| `destroy()` | Removes the funnel and its events from the DOM. |
+# then install the runtime dependency in the project
+npm install --save protocol-buffers-encodings
+```
 
-# License
+That's it! Then in your application you can simply do
 
-MIT license.
+``` js
+var messages = require('./messages')
 
-[d3]: http://d3js.org/
-[examples]: http://jakezatecky.github.io/d3-funnel/
-[jQuery-extend]: https://api.jquery.com/jquery.extend/
-[lodash-merge]: https://lodash.com/docs#merge
+var buf = messages.Test.encode({
+  num: 42
+})
+```
+
+The compilation functionality is also available as a JavaScript API for programmatic use:
+
+``` js
+var protobuf = require('protocol-buffers')
+
+// protobuf.toJS() takes the same arguments as protobuf()
+var js = protobuf.toJS(fs.readFileSync('test.proto'))
+fs.writeFileSync('messages.js', js)
+```
+
+## Performance
+
+This module is fast.
+
+It uses code generation to build as fast as possible encoders/decoders for the protobuf schema.
+You can run the benchmarks yourself by doing `npm run bench`.
+
+On my Macbook Air it gives the following results
+
+```
+Benchmarking JSON (baseline)
+  Running object encoding benchmark...
+  Encoded 1000000 objects in 2142 ms (466853 enc/s)
+
+  Running object decoding benchmark...
+  Decoded 1000000 objects in 970 ms (1030928 dec/s)
+
+  Running object encoding+decoding benchmark...
+  Encoded+decoded 1000000 objects in 3131 ms (319387 enc+dec/s)
+
+Benchmarking protocol-buffers
+  Running object encoding benchmark...
+  Encoded 1000000 objects in 2089 ms (478698 enc/s)
+
+  Running object decoding benchmark...
+  Decoded 1000000 objects in 735 ms (1360544 dec/s)
+
+  Running object encoding+decoding benchmark...
+  Encoded+decoded 1000000 objects in 2826 ms (353857 enc+dec/s)
+```
+
+Note that JSON parsing/serialization in node is a native function that is *really* fast.
+
+## Leveldb encoding compatibility
+
+Compiled protocol buffers messages are valid levelup encodings.
+This means you can pass them as `valueEncoding` and `keyEncoding`.
+
+``` js
+var level = require('level')
+var db = level('db')
+
+db.put('hello', {payload:'world'}, {valueEncoding:messages.Test}, function(err) {
+  db.get('hello', {valueEncoding:messages.Test}, function(err, message) {
+    console.log(message)
+  })
+})
+```
+
+## License
+
+MIT

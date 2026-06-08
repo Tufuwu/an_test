@@ -1,5 +1,2 @@
-/examples/dist
-/node_modules
-/test/compiled
-package-lock.json
-yarn.lock
+node_modules
+test/helpers/compiled.js
