@@ -1,52 +1,64 @@
 {
-  "name": "@callstack/eslint-config",
-  "version": "14.1.1",
-  "description": "ESLint preset extending recommended ESLint config, TypeScript, Prettier and Jest",
-  "engines": {
-    "node": ">=18.0.0"
+  "name": "vue-jwt-mongo",
+  "version": "1.7.3",
+  "description": "A simple authentication system for Vue.js",
+  "files": [
+    "distribution/"
+  ],
+  "main": "distribution/server.js",
+  "browser": "distribution/client.js",
+  "scripts": {
+    "test": "mocha --exit tests/*",
+    "coverage": "nyc --reporter=lcovonly npm run test",
+    "build": "babel source --out-dir distribution"
   },
-  "main": "./react-native.js",
-  "homepage": "https://github.com/callstack/eslint-config-callstack#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/callstack/eslint-config-callstack.git"
+    "url": "git+https://github.com/dubov94/vue-jwt-mongo.git"
   },
-  "author": "Michał Pierzchała <thymikee@gmail.com>",
-  "license": "MIT",
   "keywords": [
-    "eslint",
-    "eslint config",
-    "callstack"
+    "vue",
+    "jwt",
+    "jsonwebtoken",
+    "express",
+    "mongo",
+    "mongodb",
+    "auth",
+    "authentication"
   ],
-  "dependencies": {
-    "@babel/core": "^7.22.20",
-    "@babel/eslint-parser": "^7.22.15",
-    "@babel/plugin-syntax-flow": "^7.22.5",
-    "@babel/plugin-transform-react-jsx": "^7.22.15",
-    "@react-native/eslint-plugin": "^0.74.0 || ^0.73.0 || ^0.72.0",
-    "@typescript-eslint/eslint-plugin": "^6.7.2",
-    "@typescript-eslint/parser": "^6.7.2",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-flowtype": "^8.0.3",
-    "eslint-plugin-import": "^2.28.1",
-    "eslint-plugin-jest": "^27.4.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "eslint-plugin-promise": "^6.1.1",
-    "eslint-plugin-react": "^7.33.2",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-native": "^4.1.0",
-    "eslint-plugin-react-native-a11y": "^3.3.0",
-    "eslint-restricted-globals": "^0.2.0",
-    "prettier": "^3.0.3"
+  "author": "Pavel Dubov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dubov94/vue-jwt-mongo/issues"
   },
-  "peerDependencies": {
-    "eslint": ">=8.1.0"
+  "homepage": "https://github.com/dubov94/vue-jwt-mongo#readme",
+  "// dependencies.passport": "https://github.com/jaredhanson/passport/issues/939",
+  "dependencies": {
+    "body-parser": "1.20.1",
+    "express-jwt": "8.2.1",
+    "jsonwebtoken": "9.0.0",
+    "jwt-decode": "2.2.0",
+    "merge": "2.1.1",
+    "mongoose": "6.11.3",
+    "passport": "0.4.1",
+    "passport-local": "1.0.0",
+    "passport-local-mongoose": "6.0.1"
   },
   "devDependencies": {
-    "eslint": "^8.49.0",
-    "typescript": "^5.2.2"
-  },
-  "scripts": {
-    "test": "yarn --cwd test && yarn --cwd test eslint --max-warnings 0 --report-unused-disable-directives --ext .js,.ts,.jsx,.tsx ."
+    "@babel/cli": "7.17.6",
+    "@babel/core": "7.9.0",
+    "@babel/preset-env": "7.9.0",
+    "chai": "4.2.0",
+    "chai-http": "4.3.0",
+    "codecov": "3.7.1",
+    "dom-storage": "2.1.0",
+    "express": "4.18.2",
+    "jsdom": "19.0.0",
+    "mocha": "9.2.2",
+    "mongodb-memory-server": "8.9.4",
+    "nyc": "15.0.0",
+    "sinon": "9.0.1",
+    "vue": "2.5.16",
+    "vue-resource": "1.5.3"
   }
 }

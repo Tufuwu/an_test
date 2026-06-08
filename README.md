@@ -1,132 +1,149 @@
-# @callstack/eslint-config
+# vue-jwt-mongo
 
-Callstack ESLint config for React Native, React and Node.js projects, utilizing Flow, TypeScript, Prettier and Jest with sensible defaults.
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/dubov94/vue-jwt-mongo/blob/master/LICENSE)
+[![Coverage](https://codecov.io/gh/dubov94/vue-jwt-mongo/branch/master/graph/badge.svg)](https://codecov.io/gh/dubov94/vue-jwt-mongo)
+
+A [package](https://www.npmjs.com/package/vue-jwt-mongo) for bootstrapping a simple [JSON Web Token](https://jwt.io/)-based authentication system using [Vue.js](https://vuejs.org/), [MongoDB](https://www.mongodb.com/) and [Express.js](https://expressjs.com/).
 
 ## Installation
 
-With Yarn:
-
 ```bash
-yarn add --dev eslint @callstack/eslint-config
+npm install vue-jwt-mongo --save
 ```
 
-Or with npm:
+## Server
 
-```
-npm install --save-dev eslint @callstack/eslint-config
-```
+```javascript
+const app = require('express')()
 
-## Usage
-
-You can choose one of the following environments to work with by extending your ESLint config (`.eslintrc`, or `eslintConfig` field in `package.json`) with `@callstack` config tailored to your project.
-
-### React Native config
-
-Usage:
-
-```json
-{
-  "extends": "@callstack"
-}
+const vjmServer = require('vue-jwt-mongo').Server({
+  mongoUrl: 'mongodb://localhost/db',
+  jwtSecret: 'shhh'
+})
 ```
 
-Plugins used:
+### Options
 
-- **React config**
-- [eslint-plugin-react-native](https://yarnpkg.com/en/package/eslint-plugin-react-native)
-- [eslint-plugin-react-native-a11y](https://classic.yarnpkg.com/en/package/eslint-plugin-react-native-a11y)
+* `mongoUrl` (__mandatory__): an address of the Mongo database.
+  * See [`mongoose.createConnection`](http://mongoosejs.com/docs/api.html#index_Mongoose-createConnection) for details.
+* `jwtSecret` (__mandatory__): a secret key for token generation.
+  * One can get such a key [here](https://www.grc.com/passwords.htm).
+  * See [`jsonwebtoken.sign`](https://www.npmjs.com/package/jsonwebtoken#jwtsignpayload-secretorprivatekey-options-callback) for details.
+* `userModelName`: a name for the [mongoose](http://mongoosejs.com) model storing encoded user credentials.
+  * Defaults to `'User'`.
+* `jwtExpiresIn`: token expiration time in seconds.
+  * Defaults to `7 * 24 * 60 * 60` (one week).
+  * See [`jsonwebtoken.sign`](https://www.npmjs.com/package/jsonwebtoken#jwtsignpayload-secretorprivatekey-options-callback) for details.
 
-Additionally, it sets `"react-native/react-native"` environment and native platform extensions to resolve.
+### Endpoints
 
-### React config
+#### registerHandler
 
-Usage:
+Expects `{ username, password }` in the request body. Returns an empty response.
 
-```json
-{
-  "extends": "@callstack/eslint-config/react"
-}
+The password is salted and hashed via [passport-local-mongoose](https://npmjs.com/package/passport-local-mongoose).
+```javascript
+app.post('/auth/register', vjmServer.registerHandler)
 ```
 
-Plugins used:
+#### loginHandler
 
-- **Node config**
-- [eslint-plugin-react](https://yarnpkg.com/en/package/eslint-plugin-react)
-- [eslint-plugin-react-hooks](https://yarnpkg.com/en/package/eslint-plugin-react-hooks)
+Expects `{ username, password }` in the request body. Returns a string &mdash; the token.
 
-### Node config
-
-Usage:
-
-```json
-{
-  "extends": "@callstack/eslint-config/node"
-}
+```javascript
+app.post('/auth/login', vjmServer.loginHandler)
 ```
 
-Plugins used:
+#### refreshHandler
 
-- [eslint-config-prettier](https://yarnpkg.com/en/package/eslint-config-prettier)
-- [eslint-plugin-prettier](https://yarnpkg.com/en/package/eslint-plugin-prettier)
-- [eslint-plugin-jest](https://yarnpkg.com/en/package/eslint-plugin-jest) (applied for tests only, based on Jest's `testMatch` config)
-- [eslint-plugin-import](https://yarnpkg.com/en/package/eslint-plugin-import)
-- [eslint-plugin-promise](https://yarnpkg.com/en/package/eslint-plugin-promise)
-- [eslint-plugin-flowtype](https://yarnpkg.com/en/package/eslint-plugin-flowtype)
-- [@typescript-eslint/eslint-plugin](https://yarnpkg.com/en/package/@typescript-eslint/eslint-plugin) (only for `.tsx?` files)
-- [@typescript-eslint/parser](https://yarnpkg.com/en/package/@typescript-eslint/parser) (only for `.tsx?` files)
+Expects an empty request body and `Authorization: Bearer {token}` as one of the HTTP headers. Returns a string with a new token if the original token is valid.
 
-Additionally, it sets `es6` and `node` environments.
-
-### Example of extending the configuration
-
-```json
-{
-  "extends": "@callstack",
-  "rules": {
-    "global-require": 0,
-    "prefer-destructuring": 0
-  }
-}
+```javascript
+app.post('/auth/refresh', vjmServer.refreshHandler)
 ```
 
-### TypeScript
+### Protector
 
-TypeScript is supported out-of-the-box, including importing JS files from TS files and vice-versa. All you need to do is to make sure you have [`typescript`](https://yarnpkg.com/en/package/typescript) module installed.
+`jwtProtector` ensures that the incoming request has a valid token. Expects `Authorization: Bearer {token}` as one of the HTTP headers.
 
-Then when running ESLint add `--ext '.js,.ts'` (you might need also `.jsx, .tsx`) option, for example:
+```javascript
+app.get('/protected', vjmServer.jwtProtector, (request, response) => {
+    console.log(request.user.username)
+})
+ ```
 
-```bash
-yarn eslint --ext '.js,.ts' ./src
+## Client
+
+```javascript
+Vue.use(require('vue-resource'))
+Vue.use(require('vue-jwt-mongo').Client, {
+  /* options, if any */
+})
 ```
 
-`parserOptions.project` is set to `./tsconfig.json`. You may need to [adjust that](https://typescript-eslint.io/architecture/parser#project).
+### Options
 
-To do so, you'll need to override our setup for TS files in your ESLint config:
+* `registerEndpoint`: the server's endpoint for registration requests.
+  * Defaults to `'/auth/register'`.
+* `loginEndpoint`: the server's endpoint for authentication requests.
+  * Defaults to `'/auth/login'`.
+* `refreshEndpoint`: the server's endpoint for refreshing the token.
+  * Defaults to `'/auth/refresh'`.
+* `storageKey`: a [localStorage](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) key used for saving the token.
+  * Defaults to `'jsonwebtoken'`.
+* `bearerLexem`: a lexem prepending tokens in [`Authorization`](https://developer.mozilla.org/en/docs/Web/HTTP/Headers/Authorization) headers.
+  * Defaults to `'Bearer '` (extra space intended).
 
-```json
-{
-  "overrides": [
-    {
-      "files": ["*.ts", "*.tsx"],
-      "parserOptions": {
-        "project": "./packages/**/tsconfig.json"
-      }
-    }
-  ]
-}
+### Requests
+
+### Authentication
+
+All of the following requests return [vue-resource](https://github.com/pagekit/vue-resource) Promises, so one can get an idea of the callback structure [here](https://github.com/pagekit/vue-resource/blob/master/docs/http.md#response).
+
+```javascript
+this.$auth.register('login', 'password')
 ```
 
-#### VSCode
-
-If you're VSCode user, you may find adding this config to your `.vscode/settings.json` helpful:
-
-```json
-{
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ]
-}
+```javascript
+this.$auth.logIn('login', 'password')
 ```
+
+```javascript
+this.$auth.refresh()
+```
+
+### Authorization
+If `bearer: true` is passed then `Authorization: Bearer {token}` is added as a [header](https://developer.mozilla.org/en/docs/Web/HTTP/Headers/Authorization).
+
+```javascript
+this.$http.get('/protected', { bearer: true }).then(response => {
+    console.log(response)
+})
+```
+
+### Token
+
+#### isLoggedIn
+
+Returns `true` if the saved token is valid and `false` otherwise.
+
+```javascript
+let isLoggedIn = this.$auth.isLoggedIn()
+```
+
+#### getToken
+
+Returns a string if the saved token is valid and `null` otherwise.
+
+```javascript
+this.$auth.getToken()
+```
+
+#### logOut
+
+Purges the saved token.
+
+```javascript
+this.$auth.logOut()
+```
+
