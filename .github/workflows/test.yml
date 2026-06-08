@@ -1,12 +1,10 @@
-name: Node.js CI
+name: CI
 
 on:
   push:
     branches:
       - main
   pull_request:
-    branches:
-      - main
 
 jobs:
   build:
@@ -14,10 +12,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
 
@@ -29,20 +27,17 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Cache Yarn dependencies
-        uses: actions/cache@v2
+      - name: Cache Yarn and Node modules
+        uses: actions/cache@v3
         with:
           path: |
-            ~/.yarn/cache
+            ~/.cache/yarn
             node_modules
             test/node_modules
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
 
       - name: Run tests
         run: yarn test
 
-      - name: Notify on failure
-        if: failure()
-        run: echo "Build failed, please check the logs."
+      - name: Disable email notifications
+        run: echo "Email notifications are disabled in this configuration."
