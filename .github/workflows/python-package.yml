@@ -1,29 +1,24 @@
 name: CI
-
 on:
   push:
-    branches:
-      - main
-
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
       QT_QPA_PLATFORM: "offscreen"
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install graphviz graphviz-dev
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+      - run: |
+          sudo apt-get install -y graphviz graphviz-dev
           pip install -U setuptools
           pip install pytest codecov pytest-cov
-      - name: Install package
-        run: |
-          pip install ".[full,test]"
-      - name: Run tests
-        run: |
-          pytest --rootdir=$GITHUB_WORKSPACE --cov=.
-      - name: Code coverage
-        uses: codecov/codecov-action@v2
+      - run: pip install ".[full,test]"
+      - run: pytest --rootdir $TRAVIS_BUILD_DIR --cov=.
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
