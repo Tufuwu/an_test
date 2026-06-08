@@ -1,26 +1,22 @@
-name: Node.js Build and Test
-
+name: CI
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ['12', '14', '16']
+        node_js: [12, 14, 16]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install dependencies
-        run: npm install
-      - name: Install Firefox
-        run: |
-          curl -sS -o /tmp/firefox.tar.gz https://download.mozilla.org/?product=firefox-latest-ssl&os=linux&lang=en-US
-          tar -xvf /tmp/firefox.tar.gz -C /usr/local
-      - name: Install Playwright
-        run: npx playwright install
-      - name: Build
-        run: npm run build
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node_js }}
+      - run: npm install
+      - run: npx playwright install
+      - run: npm run build
