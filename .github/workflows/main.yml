@@ -1,28 +1,39 @@
-name: Build
-on: push
+name: Node.js CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-24.04
+
     strategy:
       matrix:
-        node: ['12', '14', '16']
+        node-version: [12, 14, 16]
+
     steps:
-      -
-        uses: actions/checkout@v3
-      -
-        name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-      -
-        name: Install dependencies
-        run: yarn install
-      -
-        name: Install Playwright
-        run: npx playwright install
-      -
-        name: Install Playwright browser
-        run: npx playwright install-deps
-      -
-        name: Run tests
-        run: npm run build
+    - uses: actions/checkout@v2
+
+    - name: Set up Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright
+      run: npx playwright install
+
+    - name: Build
+      run: npm run build
+
+    - name: Install Firefox
+      uses: browser-actions/setup-firefox@v1
+      with:
+        firefox-version: latest
