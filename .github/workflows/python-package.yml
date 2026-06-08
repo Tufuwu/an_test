@@ -1,37 +1,39 @@
-name: CI
+name: Python package
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-22.04
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y graphviz graphviz-dev
-          pip install -U setuptools
-          pip install pytest codecov pytest-cov
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
 
-      - name: Install package and test dependencies
-        run: |
-          pip install ".[full,test]"
+    - name: Install dependencies
+      run: |
+        sudo apt-get install graphviz graphviz-dev
+        pip install -U setuptools
+        pip install pytest codecov pytest-cov
+        pip install ".[full,test]" .
 
-      - name: Set environment variable for Qt
-        run: |
-          export QT_QPA_PLATFORM="offscreen"
+    - name: Set environment variable
+      run: echo "QT_QPA_PLATFORM=offscreen" >> $GITHUB_ENV
 
-      - name: Run tests
-        run: |
-          pytest --rootdir $GITHUB_WORKSPACE --cov=.
+    - name: Run tests
+      run: pytest --cov=./
 
-      - name: Upload code coverage
-        uses: codecov/codecov-action@v2
-        with:
-          file: coverage.xml
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
