@@ -1,36 +1,30 @@
-name: Node.js CI
-
-on: [push]
-
+name: Node CI
+on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
+    - name: Checkout
       uses: actions/checkout@v2
-      
     - name: Setup Node.js environment
       uses: actions/setup-node@v2
       with:
         node-version: '18'
-        
-    - name: Install dependencies
-      run: yarn install
-      
+    - name: Install Yarn
+      run: |
+        curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.17.3
+        export PATH=$HOME/.yarn/bin:$PATH
+        echo "::add-path::$HOME/.yarn/bin"
     - name: Cache Yarn
-      id: cache-yarn
       uses: actions/cache@v2
       with:
-        path: |
-          **/node_modules
-          ~/.yarn/cache
+        path: ~/.yarn
         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
           ${{ runner.os }}-yarn-
-          
-    - name: Build
-      run: yarn build
-      
+    - name: Install dependencies
+      run: yarn install
     - name: Test
       run: yarn test
+    - name: Coverage
+      run: yarn coverage
