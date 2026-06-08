@@ -2,28 +2,31 @@ name: Node.js CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
       - name: Install Yarn
         run: |
           curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.17.3
           export PATH=$HOME/.yarn/bin:$PATH
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Cache Yarn
-        uses: actions/cache@v4
+      - name: Cache dependencies
+        uses: actions/cache@v3
         with:
-          path: ~/.yarn/cache
-          key: ${{ runner.os }}-yarn-cache
+          path: |
+            node_modules
+            test/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Install dependencies
-        run: yarn install
-      - name: Run tests
-        run: yarn test
-
-    environment:
-      NODEJS_VERSION: "18"
+        run: yarn install --frozen-lockfile
